@@ -4,29 +4,18 @@
 
 #define DEFAULT_RTSP_PORT "8554"
 
-static char* password = "wjJcr4DO0V5OzIrz20";
+static char* password = "";
 
 static char* port = (char *) DEFAULT_RTSP_PORT;
 
 static char* command = (char *) "(  \
-        rpicamsrc annotation-mode=frame-number \
-                  roi-x=0.0 roi-w=1.0 \
-                  roi-y=0.0 roi-h=1.0 \
-                  sharpness=100 \
-                  contrast=100 \
-                  brightness=60 \
-                  drc=0 \
-                  preview=false \
-                  bitrate=2000000 \
-                  keyframe-interval=60 ! \
-          video/x-h264, framerate=30/1, profile=high, width=1640, height=1232 ! \
-          h264parse ! \
-          rtph264pay name=pay0 pt=96 \
-        alsasrc device=hw:1 ! \
-          audioconvert ! \
-          audioresample ! \
-          alawenc ! \
-          rtppcmapay name=pay1 pt=8 )";
+        rpicamsrc preview=false \
+        awb-mode=tungsten \
+        rotation=90 \
+        bitrate=8000000 ! \
+        video/x-h264, framerate=30/1, profile=high, width=1920, height=1080  ! \
+        h264parse ! \
+        rtph264pay name=pay0 pt=96 )";
 
 int main (int argc, char *argv[]) {
   GMainLoop *loop;
@@ -43,6 +32,7 @@ int main (int argc, char *argv[]) {
   g_object_set (server, "service", port, NULL);
   mounts = gst_rtsp_server_get_mount_points (server);
   factory = gst_rtsp_media_factory_new ();
+  gst_rtsp_media_factory_set_shared (factory, TRUE);
   gst_rtsp_media_factory_set_launch (factory, command);
   gst_rtsp_mount_points_add_factory (mounts, "/stream", factory);
   g_object_unref (mounts);
